@@ -74,6 +74,8 @@ public class flynokill extends JavaPlugin implements Listener {
 		}
 
 		if(disableFlyOnHit) {
+			if(damager instanceof EnderPearl) return;
+			if(!(damaged instanceof Player)) return;
 			final Player damaged1 = (Player) damaged;
 			if(damaged1.hasPermission("flynokill.bypass")) {
 				return;
