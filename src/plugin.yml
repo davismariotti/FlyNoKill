@@ -1,6 +1,6 @@
 name: FlyNoKill
-main: me.gomeow.flynokill.flynokill
-version: 1.2
+main: info.gomeow.flynokill.FlyNoKill
+version: 1.4.0
 description: If a player is flying and is in survival, they cannot harm entities.
 
 author: gomeow
@@ -9,6 +9,7 @@ permissions:
   flynokill.*:
     description: Gives all FlyNoKill permissions.
     children:
-      flynokill.bypass:
-        description: Allows players who are in survival and are flying to attack.
-        default: op
+      flynokill.bypass: true
+  flynokill.bypass:
+    description: Allows players who are in survival and are flying to attack.
+    default: op
