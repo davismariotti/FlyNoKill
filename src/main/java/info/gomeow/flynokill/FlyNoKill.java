@@ -2,7 +2,9 @@ package info.gomeow.flynokill;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -25,6 +27,8 @@ public class FlyNoKill extends JavaPlugin implements Listener {
     private boolean disableFlyOnHit = false;
     private int cooldown = 5;
     private ArrayList<String> cooldownPlayers = new ArrayList<String>();
+
+    private static List<Integer> potions = Arrays.asList(new Integer[] {2, 6, 7, 9, 15, 17, 18, 19});
 
     public void onEnable() {
         saveDefaultConfig();
@@ -98,7 +102,7 @@ public class FlyNoKill extends JavaPlugin implements Listener {
                     Collection<PotionEffect> effects = potion.getEffects();
                     if(p.isFlying()) {
                         for(PotionEffect pe:effects) {
-                            if((pe.getType().getId() == 6) || (pe.getType().getId() == 7) || (pe.getType().getId() == 17) || (pe.getType().getId() == 18) || (pe.getType().getId() == 19) || (pe.getType().getId() == 2) || (pe.getType().getId() == 9) || (pe.getType().getId() == 15)) {
+                            if(potions.contains(pe.getType().getId())) {
                                 event.setCancelled(true);
                                 p.sendMessage(ChatColor.RED + "You cannot fight while flying!");
                                 break;
