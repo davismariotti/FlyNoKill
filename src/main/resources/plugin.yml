@@ -1,6 +1,6 @@
 name: FlyNoKill
 main: info.gomeow.flynokill.FlyNoKill
-version: 1.4.0
+version: ${project.version}
 description: If a player is flying and is in survival, they cannot harm entities.
 
 author: gomeow

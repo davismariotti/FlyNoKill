@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
@@ -19,19 +18,20 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class FlyNoKill extends JavaPlugin implements Listener {
-    boolean disableFlyOnHit = false;
-    Integer cooldown = null;
-    ArrayList<String> cooldownPlayers = new ArrayList<String>();
+
+    private boolean disableFlyOnHit = false;
+    private int cooldown = 5;
+    private ArrayList<String> cooldownPlayers = new ArrayList<String>();
 
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(this, this);
-        this.disableFlyOnHit = getConfig().getBoolean("Disable-Fly-On-Hit", false);
-        if(this.disableFlyOnHit) {
-            this.cooldown = Integer.valueOf(getConfig().getInt("Cooldown", 5) * 20);
-        }
         saveDefaultConfig();
+        getServer().getPluginManager().registerEvents(this, this);
+        if(disableFlyOnHit = getConfig().getBoolean("Disable-Fly-On-Hit", false)) {
+            cooldown = getConfig().getInt("Cooldown", 5) * 20;
+        }
         try {
             Metrics metrics = new Metrics(this);
             metrics.start();
@@ -42,21 +42,20 @@ public class FlyNoKill extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onDamage(EntityDamageByEntityEvent event) {
-        Entity damager = event.getDamager();
-        Entity damagedEnt = event.getEntity();
-        if((damager instanceof Player)) {
-            Player damager1 = (Player) event.getDamager();
-            if((!damager1.isOp()) && (!damager1.hasPermission("flynokill.bypass")) && (damager1.isFlying())) {
+        Entity entity = event.getEntity();
+        if(event.getDamager() instanceof Player) {
+            Player damager = (Player) event.getDamager();
+            if(!damager.hasPermission("flynokill.bypass") && damager.isFlying()) {
                 event.setCancelled(true);
-                damager1.sendMessage(ChatColor.RED + "You cannot fight while flying!");
+                damager.sendMessage(ChatColor.RED + "You cannot fight while flying!");
             }
 
         }
-        else if((damager instanceof Arrow)) {
+        else if(event.getDamager() instanceof Arrow) {
             Arrow arrow = (Arrow) event.getDamager();
             if((arrow.getShooter() instanceof Player)) {
                 Player shooter = (Player) arrow.getShooter();
-                if((!shooter.isOp()) && (!shooter.hasPermission("flynokill.bypass")) && (shooter.isFlying())) {
+                if(!shooter.hasPermission("flynokill.bypass") && shooter.isFlying()) {
                     event.setDamage(0);
                     shooter.sendMessage(ChatColor.RED + "You cannot fight while flying!");
                 }
@@ -65,23 +64,23 @@ public class FlyNoKill extends JavaPlugin implements Listener {
 
         }
 
-        if(this.disableFlyOnHit) {
-            if(damagedEnt instanceof Player) {
-                final Player damaged = (Player) damagedEnt;
+        if(disableFlyOnHit) {
+            if(entity instanceof Player) {
+                final Player damaged = (Player) entity;
                 if(!damaged.hasPermission("flynokill.bypass")) {
                     if(damaged.isFlying()) {
-                        if(!this.cooldownPlayers.contains(damaged.getName())) {
-                            this.cooldownPlayers.add(damaged.getName());
+                        if(!cooldownPlayers.contains(damaged.getName())) {
+                            cooldownPlayers.add(damaged.getName());
                             damaged.setFlying(false);
-                            Integer cooldownSecs = Integer.valueOf(this.cooldown.intValue() / 20);
-                            damaged.sendMessage(ChatColor.DARK_RED + "You can't fly for " + cooldownSecs.toString() + " seconds!");
-                            Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+                            damaged.sendMessage(ChatColor.DARK_RED + "You can't fly for " + (cooldown / 20) + " seconds!");
+                            new BukkitRunnable() {
 
+                                @Override
                                 public void run() {
                                     cooldownPlayers.remove(damaged.getName());
                                 }
 
-                            }, this.cooldown.intValue());
+                            }.runTaskLater(this, cooldown);
                         }
                     }
                 }
@@ -98,22 +97,12 @@ public class FlyNoKill extends JavaPlugin implements Listener {
                 if(!p.hasPermission("flynokill.bypass")) {
                     Collection<PotionEffect> effects = potion.getEffects();
                     if(p.isFlying()) {
-                        boolean contains = false;
                         for(PotionEffect pe:effects) {
-                            if((pe.getType().getId() != 6) &&
-                                    (pe.getType().getId() != 7) &&
-                                    (pe.getType().getId() != 17) &&
-                                    (pe.getType().getId() != 18) &&
-                                    (pe.getType().getId() != 19) &&
-                                    (pe.getType().getId() != 2) &&
-                                    (pe.getType().getId() != 9) &&
-                                    (pe.getType().getId() != 15)) continue;
-                            contains = true;
-                            break;
-                        }
-                        if(contains) {
-                            event.setCancelled(true);
-                            p.sendMessage(ChatColor.RED + "You cannot fight while flying!");
+                            if((pe.getType().getId() == 6) || (pe.getType().getId() == 7) || (pe.getType().getId() == 17) || (pe.getType().getId() == 18) || (pe.getType().getId() == 19) || (pe.getType().getId() == 2) || (pe.getType().getId() == 9) || (pe.getType().getId() == 15)) {
+                                event.setCancelled(true);
+                                p.sendMessage(ChatColor.RED + "You cannot fight while flying!");
+                                break;
+                            }
                         }
                     }
                 }
@@ -135,8 +124,8 @@ public class FlyNoKill extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onFlyChange(PlayerToggleFlightEvent event) {
-        Player flyChanger = event.getPlayer();
-        if(this.cooldownPlayers.contains(flyChanger.getName()))
+        Player p = event.getPlayer();
+        if(cooldownPlayers.contains(p.getName()))
             event.setCancelled(true);
     }
 }
