@@ -1,7 +1,11 @@
-#FlyNoKill Config#
+# FlyNoKill Config #
 #
-#Set this is you want to stop people from flying if they are attacked.
+# Set this is you want to stop people from flying if they are attacked.
 Disable-Fly-On-Hit: false
-#Cooldown (in seconds) until they can fly again.
-#Note: This will only be affected if the above option is true.
+# Cooldown (in seconds) until they can fly again.
+# Note: This will only be affected if the above option is true.
 Cooldown: 10
+#
+# If set to true, FlyNoKill will check and download the latest updates for FlyNoKill
+# Set it to false if you would like to opt out.
+update: true
